@@ -1,3 +1,4 @@
+require('dotenv').config();
 // 1. 우리가 설치한 express 라이브러리를 가져온다.
 const express = require('express');
 // 2. mongoose 라이브러리를 가져온다.
