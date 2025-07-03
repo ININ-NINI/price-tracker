@@ -24,7 +24,7 @@ const priceSchema = new mongoose.Schema({
   price: { type: Number, required: true },
 }, { timestamps: true });
 
-const Price = mongoose.model('Price', priceSchema);
+const Price = mongoose.models.Price || mongoose.model('Price', priceSchema);
 
 // --- API 라우트 ---
 // 데이터 생성
