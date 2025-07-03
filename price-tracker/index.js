@@ -12,9 +12,6 @@ const port = 3000;
 // 5. JSON 형태의 데이터를 처리할 수 있도록 미들웨어를 추가한다.
 app.use(express.json());
 
-// public 폴더를 정적 파일 디렉토리로 제공
-app.use(express.static('public'));
-
 // 6. MongoDB 연결
 const mongoUri = 'mongodb+srv://ININ:ingu0325@cluster0.ppavhbw.mongodb.net/price-tracker?retryWrites=true&w=majority&appName=Cluster0';
 mongoose.connect(mongoUri);
