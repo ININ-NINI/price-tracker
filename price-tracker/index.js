@@ -11,16 +11,15 @@ const port = 3000;
 
 // 5. JSON 형태의 데이터를 처리할 수 있도록 미들웨어를 추가한다.
 app.use(express.json());
+app.use(express.static('public'));
 
 // 6. MongoDB 연결
 const mongoUri = 'mongodb+srv://ININ:ingu0325@cluster0.ppavhbw.mongodb.net/price-tracker?retryWrites=true&w=majority&appName=Cluster0';
 mongoose.connect(mongoUri);
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB 연결 오류:'));
-db.once('open', () => {
-  console.log('MongoDB에 성공적으로 연결되었습니다.');
-});
+db.on('error');
+db.once('open');
 
 // 7. Price 스키마 및 모델 정의
 const priceSchema = new mongoose.Schema({
@@ -95,6 +94,4 @@ app.delete('/api/prices/:id', async (req, res) => {
 });
 
 // 10. 서버 실행
-app.listen(port, () => {
-  console.log(`서버가 http://localhost:${port} 에서 실행 중입니다.`);
-});
+app.listen(port);
