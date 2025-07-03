@@ -1,28 +1,24 @@
+// 1. 환경 변수를 가장 먼저 불러옵니다.
 require('dotenv').config();
-// 1. 우리가 설치한 express 라이브러리를 가져온다.
+
 const express = require('express');
-// 2. mongoose 라이브러리를 가져온다.
 const mongoose = require('mongoose');
+const path = require('path');
 
-// 3. express를 실행해서 app 객체를 만든다. 이 app이 서버의 본체다.
 const app = express();
+const port = process.env.PORT || 3000;
 
-// 4. 서버가 사용할 포트 번호를 정한다. 3000번 문을 사용하겠다는 의미.
-const port = 3000;
-
-// 5. JSON 형태의 데이터를 처리할 수 있도록 미들웨어를 추가한다.
+// --- 미들웨어 설정 ---
 app.use(express.json());
-app.use(express.static('public'));
 
-// 6. MongoDB 연결
-const mongoUri = 'mongodb+srv://ININ:ingu0325@cluster0.ppavhbw.mongodb.net/price-tracker?retryWrites=true&w=majority&appName=Cluster0';
-mongoose.connect(mongoUri);
+// --- MongoDB 연결 ---
+const mongoUri = process.env.MONGO_URI;
 
-const db = mongoose.connection;
-db.on('error');
-db.once('open');
+mongoose.connect(mongoUri)
+  .then(() => console.log('MongoDB에 성공적으로 연결되었습니다.'))
+  .catch(err => console.error('MongoDB 연결 실패:', err));
 
-// 7. Price 스키마 및 모델 정의
+// --- 스키마 및 모델 정의 ---
 const priceSchema = new mongoose.Schema({
   itemName: { type: String, required: true },
   price: { type: Number, required: true },
@@ -30,69 +26,80 @@ const priceSchema = new mongoose.Schema({
 
 const Price = mongoose.model('Price', priceSchema);
 
-// 8. POST 요청 처리 - 가격 데이터 추가
+// --- API 라우트 ---
+// 데이터 생성
 app.post('/api/prices', async (req, res) => {
   try {
     const price = new Price(req.body);
     const savedPrice = await price.save();
     res.status(201).json(savedPrice);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 });
 
-// 9. GET 요청 처리 - 모든 가격 데이터 조회
+// 데이터 조회 (가격 변동 포함)
 app.get('/api/prices', async (req, res) => {
-  try {
-    const result = await Price.aggregate([
-      // 1. 최신순 정렬
-      { $sort: { itemName: 1, createdAt: -1 } },
-      // 2. 상품별로 그룹화, 최신 2개 가격만 배열로 저장
-      {
-        $group: {
-          _id: "$itemName",
-          itemName: { $first: "$itemName" },
-          prices: { $push: "$price" },
-          lastUpdated: { $first: "$createdAt" }
-        }
-      },
-      // 3. 필요한 필드 가공
-      {
-        $project: {
-          _id: 1,
-          itemName: 1,
-          currentPrice: { $arrayElemAt: ["$prices", 0] },
-          priceChange: {
-            $cond: [
-              { $gt: [ { $size: "$prices" }, 1 ] },
-              { $subtract: [ { $arrayElemAt: ["$prices", 0] }, { $arrayElemAt: ["$prices", 1] } ] },
-              0
-            ]
-          },
-          lastUpdated: 1
-        }
-      },
-      // 4. 상품명 가나다순 정렬
-      { $sort: { itemName: 1 } }
-    ]);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    try {
+        const aggregation = await Price.aggregate([
+            { $sort: { createdAt: -1 } },
+            {
+                $group: {
+                    _id: '$itemName',
+                    docs: { $push: '$$ROOT' }
+                }
+            },
+            {
+                $project: {
+                    itemName: '$_id',
+                    latestDoc: { $first: '$docs' },
+                    previousDoc: { $arrayElemAt: ['$docs', 1] }
+                }
+            },
+            {
+                $project: {
+                    _id: '$itemName',
+                    itemName: '$itemName',
+                    currentPrice: '$latestDoc.price',
+                    lastUpdated: '$latestDoc.createdAt',
+                    priceChange: {
+                        $ifNull: [
+                            { $subtract: ['$latestDoc.price', '$previousDoc.price'] },
+                            0
+                        ]
+                    }
+                }
+            }
+        ]);
+        res.json(aggregation);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
-// 10. 서버 실행 전에 삭제 API 추가
+// 데이터 삭제
 app.delete('/api/prices/:id', async (req, res) => {
   try {
-    const deleted = await Price.findByIdAndDelete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ error: '해당 ID의 데이터가 존재하지 않습니다.' });
+    const result = await Price.findByIdAndDelete(req.params.id);
+    if (!result) {
+      return res.status(404).json({ message: '해당 ID의 데이터를 찾을 수 없습니다.' });
     }
-    res.json({ message: '데이터가 성공적으로 삭제되었습니다.' });
+    res.status(200).json({ message: '데이터가 성공적으로 삭제되었습니다.' });
   } catch (err) {
-    res.status(500).json({ error: '서버 오류로 삭제에 실패했습니다.' });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// 10. 서버 실행
-app.listen(port);
+// --- 프론트엔드 제공 ---
+// Express가 public 폴더의 파일들을 제공하도록 합니다.
+app.use(express.static(path.join(__dirname, 'public')));
+// 모든 그 외 요청은 index.html로 보냅니다 (Single Page App 스타일).
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
+// --- 서버 실행 ---
+app.listen(port, () => {
+  console.log(`서버가 http://localhost:${port} 에서 실행 중입니다.`);
+});
