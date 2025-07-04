@@ -6,12 +6,13 @@ const mongoose = require('mongoose');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 미들웨어
-app.use(express.static('public'));
+// 미들웨어 순서 중요: JSON 파싱을 먼저, 정적 파일은 나중에
 app.use(express.json());
+app.use(express.static('public'));
 
-// MongoDB 연결
-const mongoUri = process.env.MONGO_URI;
+// MongoDB 연결 - 환경 변수 확인
+const mongoUri = process.env.MONGO_URI || 'mongodb+srv://ININ:ingu0325@cluster0.ppavhbw.mongodb.net/price-tracker?retryWrites=true&w=majority&appName=Cluster0';
+
 mongoose.connect(mongoUri)
   .then(() => console.log('MongoDB에 성공적으로 연결되었습니다.'))
   .catch(err => console.error('MongoDB 연결 실패:', err));
@@ -70,6 +71,10 @@ app.delete('/api/prices/:id', async (req, res) => {
   }
 });
 
+// 루트 경로 핸들러 추가
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
 
 // 서버 실행
 app.listen(port, () => {
