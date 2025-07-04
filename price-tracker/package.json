@@ -17,6 +17,12 @@
     "dotenv": "^16.4.5"
   },
   "overrides": {
+    "path-to-regexp": "6.2.0",
+    "express": {
+      "path-to-regexp": "6.2.0"
+    }
+  },
+  "resolutions": {
     "path-to-regexp": "6.2.0"
   }
 }
