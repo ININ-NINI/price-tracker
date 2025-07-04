@@ -1,90 +1,52 @@
 require('dotenv').config();
-
 const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 기본 미들웨어만 사용
+const MONGO_URI = process.env.MONGO_URI;
+const client = new MongoClient(MONGO_URI);
+
+// 미들웨어
 app.use(express.json());
 
-// MongoDB 연결 - 환경 변수 확인
-const mongoUri = process.env.MONGO_URI || 'mongodb+srv://ININ:ingu0325@cluster0.ppavhbw.mongodb.net/price-tracker?retryWrites=true&w=majority&appName=Cluster0';
+// API가 아닌 요청에 대해서만 public 폴더를 서비스하도록 수정
+// 이 부분은 vercel.json이 처리하므로 사실상 로컬 테스트용입니다.
+app.use(express.static('public')); 
 
-mongoose.connect(mongoUri)
-  .then(() => console.log('MongoDB에 성공적으로 연결되었습니다.'))
-  .catch(err => console.error('MongoDB 연결 실패:', err));
-
-// 스키마 및 모델 정의
-const PriceSchema = new mongoose.Schema({
-  itemName: { type: String, required: true },
-  price: { type: Number, required: true },
-}, { timestamps: true });
-
-const Price = mongoose.models.Price || mongoose.model('Price', PriceSchema);
-
-// API 라우트
-app.get('/api/prices', async (req, res) => {
-    try {
-        const data = await Price.aggregate([
-            { $sort: { createdAt: -1 } },
-            { $group: { _id: '$itemName', docs: { $push: '$$ROOT' } } },
-            { $project: {
-                itemName: '$_id',
-                latestDoc: { $first: '$docs' },
-                previousDoc: { $arrayElemAt: ['$docs', 1] }
-            }},
-            { $project: {
-                _id: 0,
-                id: '$latestDoc._id',
-                itemName: '$itemName',
-                currentPrice: '$latestDoc.price',
-                lastUpdated: '$latestDoc.createdAt',
-                priceChange: { $ifNull: [{ $subtract: ['$latestDoc.price', '$previousDoc.price'] }, 0] }
-            }}
-        ]);
-        res.json(data);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-app.post('/api/prices', async (req, res) => {
-  try {
-    const price = new Price(req.body);
-    await price.save();
-    res.status(201).json(price);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-app.delete('/api/prices/:id', async (req, res) => {
-  try {
-    const result = await Price.findByIdAndDelete(req.params.id);
-    if (!result) return res.status(404).json({ message: "데이터를 찾지 못했습니다."});
-    res.status(200).json({ message: "성공적으로 삭제되었습니다." });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// 정적 파일 제공 - 더 안전한 방식
-app.get('/', (req, res) => {
+// 프론트엔드 라우트
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/script.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'script.js'));
+app.get('/api/summary', async (req, res) => {
+  try {
+    await client.connect();
+    const db = client.db();
+    const coll = db.collection('daily_summaries');
+    // 가장 최신 날짜 구하기
+    const latest = await coll.find().sort({ date: -1 }).limit(1).toArray();
+    if (!latest.length) return res.json([]);
+    const latestDate = latest[0].date;
+    // 해당 날짜의 모든 요약 데이터 조회
+    const result = await coll.find({ date: latestDate }).toArray();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
 });
 
-app.get('/style.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'style.css'));
-});
+// 서버리스 환경에서는 listen을 호출하지 않을 수 있으므로,
+// Vercel 환경이 아닐 때만 listen하도록 설정
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
 
-// 서버 실행
-app.listen(port, () => {
-  console.log(`서버가 ${port}번 포트에서 실행 중입니다.`);
-});
+// Vercel에서 사용할 수 있도록 app을 export
+module.exports = app;

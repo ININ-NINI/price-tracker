@@ -1,49 +1,67 @@
-body {
-    background: #121212;
-    color: #B0B0B0;
-    font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', 'sans-serif';
-    margin: 0;
-    padding: 0;
+/* 컬러 변수 정의 */
+:root {
+  --main-amber: #B56A36;
+  --amber-point: #D98E5E;
+  --dark-bg: #121212;
+  --card-bg: #1E1E1E;
+  --success: #5CB85C;
+  --warning: #E74C3C;
+  --neutral: #B0B0B0;
+  --white: #FFFFFF;
 }
 
+/* 기본 & 다크모드 설정 */
+body {
+  background: #18120C;
+  color: #fff;
+  font-family: 'Pretendard', 'Noto Sans KR', Arial, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* 레이아웃 및 타이포그래피 */
 .container {
-    max-width: 600px;
-    margin: 40px auto 0 auto;
-    padding: 0 16px;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 15px;
 }
 
 h1 {
-    color: #FFFFFF;
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 24px;
-    letter-spacing: -1px;
+  text-align: center;
+  margin: 2.5rem 0 1.5rem 0;
+  font-size: 2.2rem;
+  color: #B56A36;
+  letter-spacing: -1px;
 }
 
 h2 {
     color: #B0B0B0;
     font-size: 1.2rem;
     font-weight: 500;
-    margin-top: 32px;
-    margin-bottom: 16px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
 }
 
+/* 입력 폼 */
 form {
     display: flex;
     gap: 12px;
-    margin-bottom: 32px;
+    margin-bottom: 40px;
 }
 
 input[type="text"],
 input[type="number"] {
+    flex-grow: 1;
     background: #1E1E1E;
-    color: #FFF;
-    border: 1.5px solid #B56A36;
-    border-radius: 6px;
+    color: #FFFFFF;
+    border: 1px solid #444;
+    border-radius: 8px;
     padding: 12px 14px;
     font-size: 1rem;
     outline: none;
-    transition: border 0.2s;
+    transition: border-color 0.2s;
 }
 input[type="text"]:focus,
 input[type="number"]:focus {
@@ -54,85 +72,93 @@ button[type="submit"] {
     background: #B56A36;
     color: #FFFFFF;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 12px 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background-color 0.2s;
 }
 button[type="submit"]:hover {
     background: #D98E5E;
 }
 
-.price-list {
-    margin-top: 0;
-}
-
+/* 가격 목록 (카드 디자인) */
 .price-item {
     background: #1E1E1E;
     border-radius: 10px;
     padding: 18px 20px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-    gap: 8px;
+    gap: 16px;
 }
 
 .item-info {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex-grow: 1;
 }
 
 .item-name {
-    color: #FFF;
+    color: var(--white);
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 8px;
 }
 
 .item-date {
-    color: #B0B0B0;
-    font-size: 0.9rem;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.item-value {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .item-price {
-    color: #D98E5E;
-    font-size: 1.3rem;
+    color: var(--white);
+    font-size: 1.4rem;
     font-weight: 700;
-    margin-left: 24px;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
+    margin-bottom: 6px;
 }
 
-.refresh-btn {
-    background-color: #28a745;
-    margin-bottom: 20px;
+.item-diff {
+    font-size: 1.1rem;
+    font-weight: 600;
 }
-.refresh-btn:hover {
-    background-color: #218838;
+.item-diff.up {
+    color: var(--warning);
+}
+.item-diff.down {
+    color: var(--success);
+}
+.item-diff.neutral {
+    color: var(--neutral);
 }
 
+/* 삭제 버튼 */
 .delete-btn {
-    background: #E74C3C;
-    color: #FFF;
+    background: #4a2c2c;
+    color: #E74C3C;
     border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-size: 0.95rem;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    margin-left: 16px;
     transition: background 0.2s;
 }
 .delete-btn:hover {
-    background: #FF6F61;
+    background: #E74C3C;
+    color: #FFFFFF;
 }
 
+/* 커스텀 모달 */
 .hidden {
     display: none !important;
 }
@@ -140,81 +166,159 @@ button[type="submit"]:hover {
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
 }
 
 .modal-content {
-    background: #232323;
-    color: #fff;
+    background: #2a2a2e;
     border-radius: 12px;
-    padding: 32px 28px 24px 28px;
-    min-width: 320px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 32px;
+    min-width: 300px;
+    text-align: center;
 }
 
 .modal-message {
     font-size: 1.1rem;
     margin-bottom: 24px;
-    color: #fff;
-    text-align: center;
+    color: #FFFFFF;
 }
 
 .modal-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-cancel-btn, .modal-confirm-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .modal-cancel-btn {
     background: #444;
     color: #ccc;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
 }
 .modal-cancel-btn:hover {
-    background: #666;
+    background: #555;
 }
 
 .modal-confirm-btn {
     background: #E74C3C;
-    color: #fff;
+    color: #FFFFFF;
+}
+.modal-confirm-btn:hover {
+    background: #c0392b;
+}
+
+/* 메인 버튼 스타일 */
+.btn-main {
+    background: var(--main-amber);
+    color: var(--white);
     border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
+    border-radius: 8px;
+    padding: 12px 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background-color 0.2s;
 }
-.modal-confirm-btn:hover {
-    background: #FF6F61;
+.btn-main:hover {
+    background: var(--amber-point);
 }
 
-.price-change {
-    font-weight: 600;
-    margin-left: 10px;
-    font-size: 1.05rem;
-    vertical-align: middle;
+/* 네비게이션 탭 강조 */
+.nav-tab.active {
+    color: var(--main-amber);
+    border-bottom: 2px solid var(--main-amber);
 }
-.price-change.positive {
-    color: #E74C3C;
+
+/* CTA 강조 */
+.cta {
+    background: var(--amber-point);
+    color: var(--white);
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 700;
+    text-align: center;
 }
-.price-change.negative {
-    color: #5CB85C;
+
+#price-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-width: 480px;
+  margin: 0 auto 2.5rem auto;
+  padding: 0 1rem;
 }
-.price-change.neutral {
-    color: #B0B0B0;
-} 
+
+.price-card {
+  background: #23180F;
+  border-radius: 1.1rem;
+  box-shadow: 0 2px 16px 0 rgba(181, 106, 54, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.3rem 1.5rem 1.3rem 1.3rem;
+  border-left: 6px solid #B56A36;
+  transition: box-shadow 0.2s;
+}
+.price-card:hover {
+  box-shadow: 0 4px 24px 0 rgba(181, 106, 54, 0.18);
+}
+
+.price-card .category {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: #FFD7A0;
+  letter-spacing: -0.5px;
+}
+
+.price-card .price-info {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+}
+
+.price-card .price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
+.price-card .change {
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-left: 0.2rem;
+  letter-spacing: -0.5px;
+}
+
+.positive {
+  color: #E74C3C;
+}
+
+.negative {
+  color: #5CB85C;
+}
+
+@media (max-width: 600px) {
+  #price-dashboard {
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+  .price-card {
+    padding: 1rem 0.8rem 1rem 1rem;
+  }
+  h1 {
+    font-size: 1.3rem;
+    margin: 1.5rem 0 1rem 0;
+  }
+}
