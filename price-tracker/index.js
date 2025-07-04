@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const path = require('path');
 const { MongoClient } = require('mongodb');
 
 const app = express();
@@ -11,15 +10,6 @@ const client = new MongoClient(MONGO_URI);
 
 // 미들웨어
 app.use(express.json());
-
-// API가 아닌 요청에 대해서만 public 폴더를 서비스하도록 수정
-// 이 부분은 vercel.json이 처리하므로 사실상 로컬 테스트용입니다.
-app.use(express.static('public')); 
-
-// 프론트엔드 라우트
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 app.get('/api/summary', async (req, res) => {
   try {
@@ -39,14 +29,6 @@ app.get('/api/summary', async (req, res) => {
     await client.close();
   }
 });
-
-// 서버리스 환경에서는 listen을 호출하지 않을 수 있으므로,
-// Vercel 환경이 아닐 때만 listen하도록 설정
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
-}
 
 // Vercel에서 사용할 수 있도록 app을 export
 module.exports = app;
