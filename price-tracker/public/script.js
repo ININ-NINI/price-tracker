@@ -37,5 +37,20 @@ function renderDashboard(data) {
 document.addEventListener('DOMContentLoaded', () => {
   fetch('/api/summary')
     .then(res => res.json())
-    .then(data => renderDashboard(data));
+    .then(data => {
+      const container = document.getElementById('dashboard');
+      container.innerHTML = '';
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h2>${item.품목명}</h2>
+          <p>단위: ${item.단위}</p>
+          <p>평균가격: ${item.평균가격.toLocaleString()}원</p>
+          <p>등락률: <span class="${item.등락률 > 0 ? 'up' : item.등락률 < 0 ? 'down' : ''}">${item.등락률}%</span></p>
+          <p>날짜: ${item.date}</p>
+        `;
+        container.appendChild(card);
+      });
+    });
 });

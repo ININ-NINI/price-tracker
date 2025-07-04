@@ -15,14 +15,14 @@ app.get('/api/summary', async (req, res) => {
   try {
     await client.connect();
     const db = client.db();
-    const coll = db.collection('daily_summaries');
-    // 가장 최신 날짜 구하기
-    const latest = await coll.find().sort({ date: -1 }).limit(1).toArray();
+    const collection = db.collection('daily_summaries');
+    // 최신 날짜 찾기
+    const latest = await collection.find().sort({ date: -1 }).limit(1).toArray();
     if (!latest.length) return res.json([]);
     const latestDate = latest[0].date;
-    // 해당 날짜의 모든 요약 데이터 조회
-    const result = await coll.find({ date: latestDate }).toArray();
-    res.json(result);
+    // 최신 날짜의 모든 요약 데이터 조회
+    const summaries = await collection.find({ date: latestDate }).toArray();
+    res.json(summaries);
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
