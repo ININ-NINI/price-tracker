@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const { MongoClient } = require('mongodb');
 
 const app = express();
@@ -10,6 +11,7 @@ const client = new MongoClient(MONGO_URI);
 
 // 미들웨어
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/summary', async (req, res) => {
   try {
@@ -29,6 +31,17 @@ app.get('/api/summary', async (req, res) => {
     await client.close();
   }
 });
+
+// 모든 나머지 라우트는 index.html로
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
 
 // Vercel에서 사용할 수 있도록 app을 export
 module.exports = app;
