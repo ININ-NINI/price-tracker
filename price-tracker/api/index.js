@@ -8,7 +8,7 @@ const client = new MongoClient(MONGO_URI);
 
 app.use(express.json());
 
-app.get('/api/summary', async (req, res) => {
+app.get('/summary', async (req, res) => {
   try {
     await client.connect();
     const db = client.db();
