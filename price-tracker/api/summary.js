@@ -1,15 +1,7 @@
-require('dotenv').config();
-const express = require('express');
 const { MongoClient } = require('mongodb');
 
-const app = express();
-const MONGO_URI = process.env.MONGO_URI;
-const client = new MongoClient(MONGO_URI);
-
-app.use(express.json());
-
-app.get('/summary', async (req, res) => {
-  console.log('API /summary called');
+module.exports = async (req, res) => {
+  const client = new MongoClient(process.env.MONGO_URI);
   try {
     await client.connect();
     const db = client.db();
@@ -24,6 +16,4 @@ app.get('/summary', async (req, res) => {
   } finally {
     await client.close();
   }
-});
-
-module.exports = app; 
+}; 
